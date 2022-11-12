@@ -19,6 +19,7 @@ import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
+import qengine.dictionary.Dictionary;
 
 /**
  * Programme simple lisant un fichier de requête et un fichier de données.
@@ -81,8 +82,10 @@ final class Main {
 	 * Entrée du programme
 	 */
 	public static void main(String[] args) throws Exception {
-		parseData();
-		parseQueries();
+		Dictionary dictionary = new Dictionary();
+		dictionary.parseDataFile(dataFile);
+		System.out.println(dictionary.getDictionary().toString());
+		//parseQueries();
 	}
 
 	// ========================================================================
