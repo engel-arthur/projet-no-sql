@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.eclipse.rdf4j.query.algebra.In;
 import org.eclipse.rdf4j.query.algebra.Projection;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
@@ -20,6 +21,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import qengine.dictionary.Dictionary;
+import qengine.index.Index;
 
 /**
  * Programme simple lisant un fichier de requête et un fichier de données.
@@ -83,9 +85,10 @@ final class Main {
 	 */
 	public static void main(String[] args) throws Exception {
 		Dictionary dictionary = new Dictionary();
-		dictionary.parseDataFile(dataFile);
+		Index hexaStore = new Index();
+		dictionary.parseDataFile(dataFile, hexaStore);
+		System.out.println(hexaStore.getSPO().toString());
 		System.out.println(dictionary.getDictionary().toString());
-		//parseQueries();
 	}
 
 	// ========================================================================
