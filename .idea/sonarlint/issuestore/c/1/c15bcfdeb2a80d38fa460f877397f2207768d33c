@@ -1,0 +1,17 @@
+
+S	java:S106B"9Replace this use of System.out or System.err by a logger.(á·¯ğùÿÿÿÿ
+S	java:S106D"9Replace this use of System.out or System.err by a logger.(Š”ÿÿÿÿÿ
+S	java:S106F"9Replace this use of System.out or System.err by a logger.(¦½‡Òûÿÿÿÿ
+P
+java:S1161K":Add the "@Override" annotation above this method signature(µâ¾
+S	java:S106L"9Replace this use of System.out or System.err by a logger.(Âñ¦Îúÿÿÿÿ
+S	java:S106W"9Replace this use of System.out or System.err by a logger.(í¬ ÿÿÿÿÿ
+]	java:S125X"<This block of commented-out lines of code should be removed.(—Ú˜Áÿÿÿÿÿ8ˆÇ¨åÆ0
+“
+java:S1130`"xRemove the declaration of thrown exception 'java.io.FileNotFoundException' which is a subclass of 'java.io.IOException'.(¶¸–Ÿÿÿÿÿÿ
+–
+java:S1130†"xRemove the declaration of thrown exception 'java.io.FileNotFoundException' which is a subclass of 'java.io.IOException'.( Õ–ú8ÓÍÃåÆ0
+S
+java:S1144`"1Remove this unused private "parseQueries" method.(¶¸–Ÿÿÿÿÿÿ8‹Ç¨åÆ0
+L
+java:S1144†".Remove this unused private "parseData" method.( Õ–ú8ÔÍÃåÆ0
