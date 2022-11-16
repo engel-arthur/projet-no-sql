@@ -2,12 +2,7 @@ package qengine.index;
 
 public class Index {
 
-    /**
-     * Créer 6 versions différentes de chaque requête
-     * Les stocker
-     * Avoir des B+ Tree
-     */
-
+    //We implement the hexastore approach, hence we have 6 TripleStores.
     TripleStore SPO = new TripleStore();
     TripleStore SOP = new TripleStore();
     TripleStore PSO = new TripleStore();
@@ -18,7 +13,8 @@ public class Index {
 
 
 
-    public void hexaStores(int subject, int predicate, int object) {
+    //Adds a record to the index, in the right order for each TripleStore
+    public void hexaStore(int subject, int predicate, int object) {
 
         SPO.insertTriplet(subject, predicate, object);
         SOP.insertTriplet(subject, object, predicate);
