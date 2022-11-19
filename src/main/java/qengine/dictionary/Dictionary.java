@@ -6,10 +6,15 @@ import java.util.Objects;
 
 public class Dictionary {
 
-    private Map<Integer, String> dictionaryMap = new HashMap<>();
+    private final Map<Integer, String> dictionaryMap = new HashMap<>();
+    private final Map<String, Integer> dictionaryCounterMap = new HashMap<>();
 
     public void addToDictionary(int key, String stringToAdd) {
         dictionaryMap.put(key, stringToAdd);
+    }
+
+    public void addToCounterDictionary(String string, int indexOfTheString) {
+        dictionaryCounterMap.put(string, indexOfTheString);
     }
 
     /*
@@ -23,16 +28,12 @@ public class Dictionary {
         return dictionaryMap;
     }
 
+    public Map<String, Integer> getDictionaryCounterMap() {
+        return dictionaryCounterMap;
+    }
+
     //Used to populate the index in the main
     public int getKeyByValue(String value) {
-
-        for (Map.Entry<Integer, String> entry : dictionaryMap.entrySet()) {
-
-            if (Objects.equals(value, entry.getValue())) {
-
-                return entry.getKey();
-            }
-        }
-        return -1;
+        return dictionaryCounterMap.get(value) == null ? -1 : dictionaryCounterMap.get(value);
     }
 }

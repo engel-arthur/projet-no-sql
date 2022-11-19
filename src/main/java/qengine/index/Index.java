@@ -1,50 +1,64 @@
 package qengine.index;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 public class Index {
 
-    //We implement the hexastore approach, hence we have 6 TripleStores.
-    TripleStore SPO = new TripleStore();
-    TripleStore SOP = new TripleStore();
-    TripleStore PSO = new TripleStore();
-    TripleStore POS = new TripleStore();
-    TripleStore OSP = new TripleStore();
-    TripleStore OPS = new TripleStore();
+    //The structure is three levels deep, we have the root, which can have multiple internal children, which can have multiple leaves.
+    //In a triplet, the first element would be the root node, the second the internal node, and the third would be the leaf node
 
+    private Map<Integer, Map<Integer, ArrayList<Integer>>> tripleStore;
 
-
-
-    //Adds a record to the index, in the right order for each TripleStore
-    public void hexaStore(int subject, int predicate, int object) {
-
-        SPO.insertTriplet(subject, predicate, object);
-        SOP.insertTriplet(subject, object, predicate);
-        PSO.insertTriplet(predicate, subject, object);
-        POS.insertTriplet(predicate, object, subject);
-        OSP.insertTriplet(object, subject, predicate);
-        OPS.insertTriplet(object, predicate, subject);
+    public Index() {
+        this.tripleStore = new HashMap<>();
     }
 
-    public TripleStore getSPO() {
-        return SPO;
+    public void insertTriplet(int root, int internal, int leaf) {
+
+        //If the root of the triplet we want to add is not already in the index, we add it, along with an empty internal child.
+        if (tripleStore.get(root) == null) {
+
+            Map<Integer,ArrayList<Integer>> mapInternals = new HashMap<>();
+            tripleStore.put(root, mapInternals);
+        }
+
+        //If the internal node we want to add is not already a child of the root, we add it, along with an empty list of leaves
+        if (tripleStore.get(root).get(internal) == null) {
+
+            ArrayList<Integer> listLeaf = new ArrayList<>();
+            tripleStore.get(root).put(internal, listLeaf);
+        }
+
+        //If the leaf we want to add is not a child of the internal node, we add it
+        if (!tripleStore.get(root).get(internal).contains(leaf)) {
+
+            tripleStore.get(root).get(internal).add(leaf);
+        }
+
+        //If the triplet is already in the index, nothing happens
     }
 
-    public TripleStore getSOP() {
-        return SOP;
+    //Checks if the root node and internal node exist in the index, and return the corresponding list of leaves
+    public ArrayList<Integer> getLeafFromQuery(int root, int internal) {
+
+        ArrayList<Integer> listResultTriplet =  new ArrayList<>();
+
+        if (tripleStore.get(root) != null) {
+
+            if (tripleStore.get(root).get(internal) != null) {
+
+                listResultTriplet = tripleStore.get(root).get(internal);
+            }
+        }
+        return listResultTriplet;
     }
 
-    public TripleStore getPSO() {
-        return PSO;
-    }
-
-    public TripleStore getPOS() {
-        return POS;
-    }
-
-    public TripleStore getOSP() {
-        return OSP;
-    }
-
-    public TripleStore getOPS() {
-        return OPS;
+    @Override
+    public String toString() {
+        return "TripleStore{" +
+                "tripleStore=" + tripleStore.toString() +
+                '}';
     }
 }
