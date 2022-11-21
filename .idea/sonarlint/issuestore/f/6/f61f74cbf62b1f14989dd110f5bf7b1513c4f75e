@@ -1,0 +1,11 @@
+
+P
+java:S1118":Add a private constructor to hide the implicit public one.(‘§Û§
+N	java:S106"9Replace this use of System.out or System.err by a logger.(„¦Ë
+S	java:S106"9Replace this use of System.out or System.err by a logger.(Ú™ı›ùÿÿÿÿ
+S	java:S106"9Replace this use of System.out or System.err by a logger.(íËåöùÿÿÿÿ
+N	java:S106 "9Replace this use of System.out or System.err by a logger.(ÊğÊï
+S	java:S106'"9Replace this use of System.out or System.err by a logger.(ÖôÂøÿÿÿÿ
+N	java:S106("9Replace this use of System.out or System.err by a logger.(Çÿº»
+U
+java:S1128":Remove this unused import 'org.eclipse.rdf4j.model.Value'.(¼ÅÁãüÿÿÿÿ

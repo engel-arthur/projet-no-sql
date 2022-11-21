@@ -2,6 +2,7 @@ package qengine.index;
 
 public class IndexCollection {
 
+    private static IndexCollection indexCollection_instance = null;
     //We implement the hexastore approach, hence we have 6 TripleStores.
     Index SPO = new Index();
     Index SOP = new Index();
@@ -10,7 +11,14 @@ public class IndexCollection {
     Index OSP = new Index();
     Index OPS = new Index();
 
+    private IndexCollection() {}
 
+    public static IndexCollection getInstance() {
+        if (indexCollection_instance == null) {
+            indexCollection_instance = new IndexCollection();
+        }
+        return indexCollection_instance;
+    }
 
 
     //Adds a record to the index, in the right order for each TripleStore

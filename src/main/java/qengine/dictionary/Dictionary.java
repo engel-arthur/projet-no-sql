@@ -9,12 +9,32 @@ public class Dictionary {
     private final Map<Integer, String> dictionaryMap = new HashMap<>();
     private final Map<String, Integer> dictionaryCounterMap = new HashMap<>();
 
-    public void addToDictionary(int key, String stringToAdd) {
-        dictionaryMap.put(key, stringToAdd);
+    private static Dictionary dictionary_instance = null;
+    private int index = 0;
+
+    private Dictionary() {}
+
+    public static Dictionary getInstance() {
+        if (dictionary_instance == null) {
+            dictionary_instance = new Dictionary();
+        }
+        return dictionary_instance;
+    }
+    public int addToDictionary(String stringToAdd) {
+
+        if (!dictionaryCounterMap.containsKey(stringToAdd)) {
+            dictionaryMap.put(index, stringToAdd);
+            addToCounterDictionary(stringToAdd);
+            index++;
+            return index-1;
+        }
+        else {
+            return getKeyByValue(stringToAdd);
+        }
     }
 
-    public void addToCounterDictionary(String string, int indexOfTheString) {
-        dictionaryCounterMap.put(string, indexOfTheString);
+    public void addToCounterDictionary(String string) {
+        dictionaryCounterMap.put(string, index);
     }
 
     /*

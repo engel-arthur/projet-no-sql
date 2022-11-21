@@ -21,7 +21,7 @@ public class QueryHandler {
 
         int object = dictionary.getKeyByValue(pattern.getObjectVar().getValue().toString());
         int predicate = dictionary.getKeyByValue(pattern.getPredicateVar().getValue().toString());
-        Value subject = pattern.getSubjectVar().getValue();
+        String subject = pattern.getSubjectVar().toString();
 
         System.out.println("Object : " + object);
         System.out.println("Predicate : " + predicate);

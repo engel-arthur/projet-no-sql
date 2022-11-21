@@ -7,12 +7,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.algebra.Projection;
 import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.eclipse.rdf4j.query.algebra.helpers.StatementPatternCollector;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
 import qengine.dictionary.Dictionary;
 import qengine.index.IndexCollection;
 import qengine.query.QueryHandler;
@@ -41,68 +45,18 @@ final class Main {
 	 * Entrée du programme
 	 */
 	public static void main(String[] args) throws Exception {
-		Dictionary dictionary = new Dictionary();
-		IndexCollection hexaStore = new IndexCollection();
-		parseDataFile(dataFile, dictionary, hexaStore);
-		System.out.println(hexaStore.getSPO().toString());
+		Dictionary dictionary = Dictionary.getInstance();
+		IndexCollection hexastore = IndexCollection.getInstance();
+		parseData();
+		System.out.println(hexastore.getSPO().toString());
 		System.out.println(dictionary.getDictionaryMap().toString());
 		System.out.println(dictionary.getDictionaryCounterMap().toString());
 
-		parseQueries(dictionary, hexaStore);
+		parseQueries(dictionary, hexastore);
 	}
 
 	// ========================================================================
-
-	//Parses the data file, assigning an index to each element and storing all the records in an index.
-	public static void parseDataFile(String dataFile, Dictionary dictionary, IndexCollection hexaStore) throws IOException {
-		try (BufferedReader dataFileStream = Files.newBufferedReader(Paths.get(dataFile))) {
-			String lineStream = "";
-			int index = 0;
-            /*
-                We store a line while it is not null
-            */
-			while ((lineStream = dataFileStream.readLine()) != null) {
-				//Split the triplet in three parts
-				String[] lineSplitted = lineStream.split("[ \t]");
-
-				//Array used to populate the index with each record
-				int[] indexData = new int[lineSplitted.length - 1];
-
-				//For each part of the triplet
-				for (int i = 0; i < lineSplitted.length - 1; i++) {
-					//If the part is not stored in the dictionnary
-					if (lineSplitted[i].contains("<")) {
-						lineSplitted[i] = lineSplitted[i].replaceAll("[<>]", "");
-					}
-					if (!dictionary.getDictionaryMap().containsValue(lineSplitted[i])) {
-						//We assign the next available index
-						dictionary.addToDictionary(index, lineSplitted[i]);
-						dictionary.addToCounterDictionary(lineSplitted[i], index);
-						//We use this index to populate the indexData array
-						indexData[i] = index;
-						index++;
-					}
-					else {
-						//If it's already in the dictionnary, we have to retrieve the corresponding index to populate indexData (might be costly)
-						indexData[i] = dictionary.getKeyByValue(lineSplitted[i]);
-					}
-				}
-				//We hexastore each record
-				hexaStore.hexaStore(indexData[0], indexData[1], indexData[2]);
-			}
-		}
-	}
-
 	private static void parseQueries(Dictionary dictionary, IndexCollection hexaStore) throws IOException {
-		/**
-		 * Try-with-resources
-		 *
-		 * @see <a href="https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html">Try-with-resources</a>
-		 */
-		/*
-		 * On utilise un stream pour lire les lignes une par une, sans avoir à toutes les stocker
-		 * entièrement dans une collection.
-		 */
 		try (Stream<String> lineStream = Files.lines(Paths.get(queryFile))) {
 			SPARQLParser sparqlParser = new SPARQLParser();
 			Iterator<String> lineIterator = lineStream.iterator();
@@ -146,5 +100,20 @@ final class Main {
 				System.out.println("Projection : " + projection.getProjectionElemList().getElements());
 			}
 		});
+	}
+
+	private static void parseData() throws IOException {
+
+		try (Reader dataReader = new FileReader(dataFile)) {
+			// On va parser des données au format ntriples
+			RDFParser rdfParser = Rio.createParser(RDFFormat.NTRIPLES);
+
+			// On utilise notre implémentation de handler
+			rdfParser.setRDFHandler(new MainRDFHandler());
+
+			// Parsing et traitement de chaque triple par le handler
+			rdfParser.parse(dataReader, baseURI);
+
+		}
 	}
 }
