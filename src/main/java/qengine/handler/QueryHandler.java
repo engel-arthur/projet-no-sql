@@ -18,34 +18,50 @@ import java.util.List;
  * */
 public class QueryHandler {
 
-    public static void resultForAQuery(ParsedQuery query, Dictionary dictionary, IndexCollection hexaStore) {
+    private static final Dictionary dictionary = Dictionary.getInstance();
+    private static final IndexCollection hexastore = IndexCollection.getInstance();
+
+    private QueryHandler() {}
+
+    public static void resultForAQuery(ParsedQuery query) {
 
         HashSet<Integer> resultForAnEntireQuery = new HashSet<>();
         List<StatementPattern> patterns = StatementPatternCollector.process(query.getTupleExpr());
-        boolean firstPattern = true;
 
-        System.out.println("Query : [");
-        for (StatementPattern pattern : patterns) {
+        resultForAnEntireQuery = getResultFromPatterns(resultForAnEntireQuery, patterns);
+        displayResult(resultForAnEntireQuery);
+    }
 
-            System.out.println("    Pattern : ");
-            HashSet<Integer> resultForOnePattern = QueryHandler.resultForAPattern(pattern, dictionary, hexaStore);
-            if (firstPattern) {
-                firstPattern = false;
-                resultForAnEntireQuery = resultForOnePattern;
-            }
-//			System.out.println("Résultat une seule requete : " + resultForOnePattern);
-            else {
-                resultForAnEntireQuery = HashSetUtils.listIntersection(resultForAnEntireQuery, resultForOnePattern);
-            }
-        }
-        System.out.println(" ]");
+    private static void displayResult(HashSet<Integer> resultForAnEntireQuery) {
         System.out.println("Résultat : [ ");
         for (Integer result : resultForAnEntireQuery) {
             System.out.println("    " + result + " : " + dictionary.getDictionaryMap().get(result));
         }
         System.out.println(" ] ");
     }
-    public static HashSet<Integer> resultForAPattern(StatementPattern pattern, Dictionary dictionary, IndexCollection hexaStore) {
+
+    private static HashSet<Integer> getResultFromPatterns(HashSet<Integer> resultForAnEntireQuery, List<StatementPattern> patterns) {
+        boolean firstPattern = true;
+
+        System.out.println("Query : [");
+        for (StatementPattern pattern : patterns) {
+
+            System.out.println("    Pattern : ");
+            HashSet<Integer> resultForOnePattern = QueryHandler.resultForAPattern(pattern);
+
+            if (firstPattern) {
+                firstPattern = false;
+                resultForAnEntireQuery = resultForOnePattern;
+            }
+            else {
+                resultForAnEntireQuery = HashSetUtils.listIntersection(resultForAnEntireQuery, resultForOnePattern);
+            }
+        }
+        System.out.println(" ]");
+        return resultForAnEntireQuery;
+    }
+
+    public static HashSet<Integer> resultForAPattern(StatementPattern pattern) {
 
         HashSet<Integer> listOfLeafFromOPS = new HashSet<>();
         int object = dictionary.getKeyByValue(pattern.getObjectVar().getValue().toString());
@@ -60,7 +76,7 @@ public class QueryHandler {
         }
         else {
 
-            listOfLeafFromOPS = hexaStore.getOPS().getLeafFromQuery(object, predicate);
+            listOfLeafFromOPS = hexastore.getOPS().getLeafFromQuery(object, predicate);
             /*
             * Ici, faudrait que l'on fasse des tests pour savoir quoi utiliser entre OPS et POS
             * parce que techniquement ils rendent la même chose

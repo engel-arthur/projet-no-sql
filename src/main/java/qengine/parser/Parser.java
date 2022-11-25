@@ -60,7 +60,7 @@ public class Parser {// ========================================================
                 if (line.trim().endsWith("}")) {
                     ParsedQuery query = sparqlParser.parseQuery(queryString.toString(), baseURI);
 //					System.out.println("ParsedQuery : " + query);
-                    QueryHandler.resultForAQuery(query, dictionary, hexastore);
+                    QueryHandler.resultForAQuery(query);
 
                     queryString.setLength(0); // Reset le buffer de la requête en chaine vide
                 }
