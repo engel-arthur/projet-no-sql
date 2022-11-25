@@ -38,7 +38,7 @@ public class Parser {// ========================================================
     /**
      * Fichier contenant des données rdf
      */
-    static final String dataFile = workingDir + "sample_data.nt";
+    static final String dataFile = workingDir + "100K.nt";
 
     // ========================================================================
     public static void parseQueries(Dictionary dictionary, IndexCollection hexastore) throws IOException {
