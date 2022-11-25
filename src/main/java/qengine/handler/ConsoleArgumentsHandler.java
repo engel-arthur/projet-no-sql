@@ -24,12 +24,12 @@ public final class ConsoleArgumentsHandler {
     public static final String WARM = "warm";
     public static final String SHUFFLE = "shuffle";
 
-    private static final String queriesOptionDescription = "Chemin vers le fichier contenant les requêtes à traiter";
-    private static final String dataOptionDescription = "Chemin vers le fichier contenant les données à traiter";
-    private static final String outputOptionDescription = "Chemin vers le dossier de sortie, qui contiendra les résultats des requêtes";
-    private static final String jenaOptionDescription = "Active la vérification de la correction et complétude du système, en utilisant Jena comme oracle.";
-    private static final String warmOptionDescription = "Utilise un pourcentage X de requêtes en échantillon d'entrée pour chauffer le système";
-    private static final String shuffleOptionDescription = "Permute aléatoirement les requêtes en entrée";
+    private static final String QUERIES_OPTION_DESCRIPTION = "Chemin vers le fichier contenant les requêtes à traiter";
+    private static final String DATA_OPTION_DESCRIPTION = "Chemin vers le fichier contenant les données à traiter";
+    private static final String OUTPUT_OPTION_DESCRIPTION = "Chemin vers le dossier de sortie, qui contiendra les résultats des requêtes";
+    private static final String JENA_OPTION_DESCRIPTION = "Active la vérification de la correction et complétude du système, en utilisant Jena comme oracle.";
+    private static final String WARM_OPTION_DESCRIPTION = "Utilise un pourcentage X de requêtes en échantillon d'entrée pour chauffer le système";
+    private static final String SHUFFLE_OPTION_DESCRIPTION = "Permute aléatoirement les requêtes en entrée";
 
 
     private ConsoleArgumentsHandler(){}
@@ -40,12 +40,12 @@ public final class ConsoleArgumentsHandler {
     }
 
     private static void defineOptions() {
-        options.addOption(QUERIES, true, queriesOptionDescription);
-        options.addOption(DATA, true, dataOptionDescription);
-        options.addOption(OUTPUT, true, outputOptionDescription);
-        options.addOption(JENA, false, jenaOptionDescription);
-        options.addOption(WARM, true, warmOptionDescription);
-        options.addOption(SHUFFLE, false, shuffleOptionDescription);
+        options.addOption(QUERIES, true, QUERIES_OPTION_DESCRIPTION);
+        options.addOption(DATA, true, DATA_OPTION_DESCRIPTION);
+        options.addOption(OUTPUT, true, OUTPUT_OPTION_DESCRIPTION);
+        options.addOption(JENA, false, JENA_OPTION_DESCRIPTION);
+        options.addOption(WARM, true, WARM_OPTION_DESCRIPTION);
+        options.addOption(SHUFFLE, false, SHUFFLE_OPTION_DESCRIPTION);
     }
 
     private static CommandLine parseOptions(String[] args) throws ParseException {
