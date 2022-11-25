@@ -7,8 +7,8 @@ import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import qengine.dictionary.Dictionary;
 import qengine.index.IndexCollection;
-import qengine.program.MainRDFHandler;
-import qengine.query.QueryHandler;
+import qengine.handler.DataHandler;
+import qengine.handler.QueryHandler;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -38,7 +38,8 @@ public class Parser {// ========================================================
     static final String dataFile = workingDir + "sample_data.nt";
 
     // ========================================================================
-    public static void parseQueries(Dictionary dictionary, IndexCollection hexaStore) throws IOException {
+    public static void parseQueries(Dictionary dictionary, IndexCollection hexastore) throws IOException {
+
         try (Stream<String> lineStream = Files.lines(Paths.get(queryFile))) {
             SPARQLParser sparqlParser = new SPARQLParser();
             Iterator<String> lineIterator = lineStream.iterator();
@@ -56,7 +57,7 @@ public class Parser {// ========================================================
                 if (line.trim().endsWith("}")) {
                     ParsedQuery query = sparqlParser.parseQuery(queryString.toString(), baseURI);
 //					System.out.println("ParsedQuery : " + query);
-                    QueryHandler.resultForAQuery(query, dictionary, hexaStore);
+                    QueryHandler.resultForAQuery(query, dictionary, hexastore);
 
                     queryString.setLength(0); // Reset le buffer de la requête en chaine vide
                 }
@@ -71,7 +72,7 @@ public class Parser {// ========================================================
             RDFParser rdfParser = Rio.createParser(RDFFormat.NTRIPLES);
 
             // On utilise notre implémentation de handler
-            rdfParser.setRDFHandler(new MainRDFHandler());
+            rdfParser.setRDFHandler(new DataHandler());
 
             // Parsing et traitement de chaque triple par le handler
             rdfParser.parse(dataReader, baseURI);

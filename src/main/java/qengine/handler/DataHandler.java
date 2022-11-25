@@ -1,4 +1,4 @@
-package qengine.program;
+package qengine.handler;
 
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
@@ -15,7 +15,7 @@ import qengine.index.IndexCollection;
  * À adapter/réécrire selon vos traitements.
  * </p>
  */
-public final class MainRDFHandler extends AbstractRDFHandler {
+public final class DataHandler extends AbstractRDFHandler {
 
 	@Override
 	public void handleStatement(Statement st) {
