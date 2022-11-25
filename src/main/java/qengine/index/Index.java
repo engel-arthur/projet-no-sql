@@ -4,10 +4,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-public class Index {
+/*
+ * Stores data (from a Dictionary) in a triple store format.
+ *
+ * The structure is three levels deep, we have the root, which can have multiple internal children, which can have multiple leaves.
+ * In a triplet, the first element would be the root node, the second the internal node, and the third would be the leaf node
+ * */
 
-    //The structure is three levels deep, we have the root, which can have multiple internal children, which can have multiple leaves.
-    //In a triplet, the first element would be the root node, the second the internal node, and the third would be the leaf node
+public class Index {
 
     private final Map<Integer, Map<Integer, HashSet<Integer>>> tripleStore;
 

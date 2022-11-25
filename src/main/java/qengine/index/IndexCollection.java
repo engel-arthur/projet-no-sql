@@ -1,9 +1,12 @@
 package qengine.index;
 
+/*
+ * Stores six indexes to implement the hexastore approach
+ * Each index corresponds to a different permutation of Subjet, Predicate, and Object
+ * */
 public class IndexCollection {
 
     private static IndexCollection indexCollection_instance = null;
-    //We implement the hexastore approach, hence we have 6 TripleStores.
     Index SPO = new Index();
     Index SOP = new Index();
     Index PSO = new Index();
@@ -22,7 +25,7 @@ public class IndexCollection {
 
 
     //Adds a record to the index, in the right order for each TripleStore
-    public void hexaStore(int subject, int predicate, int object) {
+    public void hexastore(int subject, int predicate, int object) {
 
         SPO.insertTriplet(subject, predicate, object);
         SOP.insertTriplet(subject, object, predicate);

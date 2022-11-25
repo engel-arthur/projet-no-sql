@@ -2,7 +2,15 @@ package qengine.dictionary;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+
+/*
+ * Stores a dictionary of values.
+ *
+ * The idea is to parse a file filled with data and
+ * add them to a dictionary coupled with an index.
+ * Each index corresponds to a property in the data,
+ * but a property can just have one index.
+ * */
 
 public class Dictionary {
 
@@ -24,7 +32,7 @@ public class Dictionary {
 
         if (!dictionaryCounterMap.containsKey(stringToAdd)) {
             dictionaryMap.put(index, stringToAdd);
-            addToCounterDictionary(stringToAdd);
+            addToCounterMap(stringToAdd);
             index++;
             return index-1;
         }
@@ -33,16 +41,9 @@ public class Dictionary {
         }
     }
 
-    public void addToCounterDictionary(String string) {
+    public void addToCounterMap(String string) {
         dictionaryCounterMap.put(string, index);
     }
-
-    /*
-        The idea is to parse a file fills with data and
-        add them to a dictionary coupled with an index.
-        Each index corresponds to a property in the data,
-        but a property can just have one index.
-    */
 
     public Map<Integer, String> getDictionaryMap() {
         return dictionaryMap;
@@ -52,7 +53,6 @@ public class Dictionary {
         return dictionaryCounterMap;
     }
 
-    //Used to populate the index in the main
     public int getKeyByValue(String value) {
         return dictionaryCounterMap.get(value) == null ? -1 : dictionaryCounterMap.get(value);
     }

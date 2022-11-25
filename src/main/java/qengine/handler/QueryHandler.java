@@ -11,12 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 
 /*
- * Cette classe permet de s'occuper des queries
- * Donc on teste si c'est une requête normale ou en étoile
- * Puis on fait en fonction
- * En étoile = en plusieurs lignes
- * On a toujours SEULEMENT le sujet en variable dans les queries
- * Donc que OPS et POS à tester dans les index puisque qu'on doit trouver S à chacune
+ * This class handles the queries
+ * It tests if it's a single request or a star request and acts accordingly
+ * The variable in the queries is ALWAYS the Subject
+ * Hence we only have to test OPS and POS.
  * */
 public class QueryHandler {
 
@@ -70,11 +68,6 @@ public class QueryHandler {
             * en fonction du taux d'apparition des termes
             * Exemple : est ce que l'objet que l'on a apparaît plus souvent
             * que le prédicat ou inversement
-            *
-            * Aussi, on doit mieux gérer les requêtes en étoile
-            * car pour le moment on affiche juste les différents résultats mais
-            * lors de ce type de requête, il faut renvoyer seulement le résultat final
-            * résultant du filtrage de la première requête avec les autres
             * */
         }
         return listOfLeafFromOPS;

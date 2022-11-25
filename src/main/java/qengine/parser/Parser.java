@@ -18,6 +18,9 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+/*
+ * This class handles the parsing of the files containing the data and the queries
+ * */
 public class Parser {// ========================================================================
 
     static final String baseURI = null;

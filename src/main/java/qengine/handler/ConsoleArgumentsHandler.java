@@ -2,19 +2,19 @@ package qengine.handler;
 
 import org.apache.commons.cli.*;
 
-public final class ConsoleArgumentsHandler {
-    /*
-                                    Cette classe gère les arguments passées en paramètre du programme.
+/*
+ * This class handles the arguments passed as parameters of the program
+ *
+ * Here are the (soon to be) supported options :
+ * -queries : path to the queries file
+ * -data : path to the data file
+ * -output : path to the output folder
+ * -jena (flag) : activates verification using Jena
+ * -warm "X" : warms up the system for performance testing
+ * -shuffle : randomly permutates the queries
+ * */
 
-                                    -queries "/chemin/vers/dossier/requetes"
-                                    -data "/chemin/vers/fichier/donnees"
-                                    -output "/chemin/vers/dossier/sortie"
-                                    -jena : active la vérification de la correction et complétude du système
-                                    en utilisant Jena comme un oracle
-                                    -warm "X" : utilise un échantillon des requêtes en entrée (prises
-                                    au hasard) correspondant au pourcentage "X" pour chauffer le système
-                                    -shuffle : considère une permutation aléatoire des requêtes en entrée
-                                 */
+public final class ConsoleArgumentsHandler {
     private static final Options options = new Options();
 
     public static final String QUERIES = "queries";

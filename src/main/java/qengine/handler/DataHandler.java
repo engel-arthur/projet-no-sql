@@ -5,16 +5,9 @@ import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 import qengine.dictionary.Dictionary;
 import qengine.index.IndexCollection;
 
-/**
- * Le RDFHandler intervient lors du parsing de données et permet d'appliquer un traitement pour chaque élément lu par le parseur.
- * 
- * <p>
- * Ce qui servira surtout dans le programme est la méthode {@link #handleStatement(Statement)} qui va permettre de traiter chaque triple lu.
- * </p>
- * <p>
- * À adapter/réécrire selon vos traitements.
- * </p>
- */
+/*
+ * This class feeds the data into the dictionary and the index
+ * */
 public final class DataHandler extends AbstractRDFHandler {
 
 	@Override
@@ -27,6 +20,6 @@ public final class DataHandler extends AbstractRDFHandler {
 		int predicateIndex = dictionary.addToDictionary(String.valueOf(st.getPredicate()));
 		int objectIndex = dictionary.addToDictionary(String.valueOf(st.getObject()));
 
-		hexastore.hexaStore(subjectIndex, predicateIndex, objectIndex);
+		hexastore.hexastore(subjectIndex, predicateIndex, objectIndex);
 	}
 }
