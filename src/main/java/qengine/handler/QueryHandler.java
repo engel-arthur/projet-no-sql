@@ -16,7 +16,7 @@ import java.util.List;
  * The variable in the queries is ALWAYS the Subject
  * Hence we only have to test OPS and POS.
  * */
-public class QueryHandler {
+public final class QueryHandler {
 
     private static final Dictionary dictionary = Dictionary.getInstance();
     private static final IndexCollection hexastore = IndexCollection.getInstance();

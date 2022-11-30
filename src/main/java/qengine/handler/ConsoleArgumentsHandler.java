@@ -1,6 +1,8 @@
 package qengine.handler;
 
 import org.apache.commons.cli.*;
+import qengine.parser.Parser;
+import qengine.program.Main;
 
 /*
  * This class handles the arguments passed as parameters of the program
@@ -56,25 +58,28 @@ public final class ConsoleArgumentsHandler {
     private static void handleOptions(CommandLine cmd) {
         if(cmd.hasOption(QUERIES)) {
             String queriesFilepath = cmd.getOptionValue(QUERIES);
-            //set query path
+            Parser.setQueryFile(queriesFilepath);
         }
         if(cmd.hasOption(DATA)) {
             String dataFilepath = cmd.getOptionValue(DATA);
-            //set data path
+            Parser.setDataFile(dataFilepath);
         }
         if(cmd.hasOption(OUTPUT)) {
             String outputPath = cmd.getOptionValue(OUTPUT);
-            //set output path
+            Parser.setOutputPath(outputPath);
+            //TODO stockage csv
         }
         if(cmd.hasOption(JENA)) {
             //lancer fonction jena
         }
         if(cmd.hasOption(WARM)) {
             int warmPercentage = Integer.parseInt(cmd.getOptionValue(WARM));
-            //lancer fonction warm
+            Main.setWarmPercentage(warmPercentage);
+            //TODO créer fonction fillQueries etc..
         }
         if(cmd.hasOption(SHUFFLE)) {
-            //lancer fonction shuffle
+            //lancer fonction shuffle (Collection.shuffle)
+            //TODO fonction
         }
     }
 }

@@ -2,7 +2,7 @@ package qengine.utils;
 
 import java.util.HashSet;
 
-public class HashSetUtils {
+public final class HashSetUtils {
     public static HashSet<Integer> listIntersection(HashSet<Integer> list1, HashSet<Integer> list2) {
 
         HashSet<Integer> interList = new HashSet<>();

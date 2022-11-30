@@ -4,7 +4,7 @@ package qengine.index;
  * Stores six indexes to implement the hexastore approach
  * Each index corresponds to a different permutation of Subjet, Predicate, and Object
  * */
-public class IndexCollection {
+public final class IndexCollection {
 
     private static IndexCollection indexCollection_instance = null;
     Index SPO = new Index();

@@ -12,7 +12,7 @@ import java.util.Map;
  * but a property can just have one index.
  * */
 
-public class Dictionary {
+public final class Dictionary {
 
     private final Map<Integer, String> dictionaryMap = new HashMap<>();
     private final Map<String, Integer> dictionaryCounterMap = new HashMap<>();
