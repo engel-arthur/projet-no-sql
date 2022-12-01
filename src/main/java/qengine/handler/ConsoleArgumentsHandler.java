@@ -2,7 +2,6 @@ package qengine.handler;
 
 import org.apache.commons.cli.*;
 import qengine.parser.Parser;
-import qengine.program.Main;
 
 /*
  * This class handles the arguments passed as parameters of the program
@@ -74,12 +73,11 @@ public final class ConsoleArgumentsHandler {
         }
         if(cmd.hasOption(WARM)) {
             int warmPercentage = Integer.parseInt(cmd.getOptionValue(WARM));
-            Main.setWarmPercentage(warmPercentage);
-            //TODO créer fonction fillQueries etc..
+            Parser.setWarmPercentage(warmPercentage);
         }
         if(cmd.hasOption(SHUFFLE)) {
             //lancer fonction shuffle (Collection.shuffle)
-            //TODO fonction
+            Parser.setShuffle(true);
         }
     }
 }

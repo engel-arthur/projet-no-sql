@@ -1,23 +1,21 @@
 package qengine.parser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import qengine.dictionary.Dictionary;
-import qengine.index.IndexCollection;
 import qengine.handler.DataHandler;
 import qengine.handler.QueryHandler;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.stream.Stream;
 
 /*
@@ -38,34 +36,41 @@ public final class Parser {// ==================================================
 
     private static String outputPath = workingDir + "out";
 
-    private static final ArrayList<String> queries = new ArrayList<>();
+    private static final ArrayList<String> rawQueries = new ArrayList<>();
+    private static final ArrayList<ParsedQuery> parsedQueries = new ArrayList<>();
+    private static final ArrayList<HashSet<Integer>> queriesResults = new ArrayList<>();
+
+
+    private static int warmPercentage = 100;
+
+    private static boolean shuffle = false;
 
     // ========================================================================
-    public static void parseQueries(Dictionary dictionary, IndexCollection hexastore, int warmPercentage) throws IOException {
+    public static void parseQueries() throws IOException {
 
         try (Stream<String> lineStream = Files.lines(Paths.get(getQueryFile()))) {
-
-            int parsedQueries = 0;
-            int totalNumberOfQueries = getNumberOrQueriesInFile(getQueryFile());
 
             Iterator<String> lineIterator = lineStream.iterator();
             StringBuilder queryStringBuilder = new StringBuilder();
 
 
-            while (lineIterator.hasNext() && (parsedQueries < (totalNumberOfQueries * (warmPercentage / 100f)))) {
+            while (lineIterator.hasNext()) {
 
                 String line = lineIterator.next();
                 //On filtre les lignes vides
                 if(!line.isEmpty()) {
-
                     parseQueryLine(line, queryStringBuilder);
-                    //Le stringbuilder est vidé quand une query est parsée
-                    if(queryStringBuilder.length() == 0) {
-                        parsedQueries++;
-                    }
                 }
             }
         }
+
+        if(isShuffle()) {
+            shuffleQueries();
+        }
+
+        processQueries();
+
+        storeQueriesWithTheirResultsInFile();
     }
 
     private static void parseQueryLine(String line, StringBuilder queryStringBuilder) {
@@ -78,32 +83,46 @@ public final class Parser {// ==================================================
 
         if (line.trim().endsWith("}")) {
             ParsedQuery query = sparqlParser.parseQuery(queryStringBuilder.toString(), baseURI);
-            QueryHandler.resultForAQuery(query);
-
+            parsedQueries.add(query);
+            rawQueries.add(queryStringBuilder.toString());
             queryStringBuilder.setLength(0); // Reset le buffer de la requête en chaine vide
         }
     }
 
-    private static int getNumberOrQueriesInFile(String path) throws IOException {
-        int counter = 0;
-        try (Stream<String> lineStream = Files.lines(Paths.get(getQueryFile()))) {
-            Iterator<String> lineIterator = lineStream.iterator();
-
-            //On compte la première ligne
-            while (lineIterator.hasNext()) {
-                String line = lineIterator.next();
-                if(line.trim().endsWith("}")) {
-                    counter++;
-                }
-            }
-        }
-        System.out.println("BONJOUR LE COUNTERU " + counter);
-        return counter;
+    public static void shuffleQueries() {
+        Collections.shuffle(parsedQueries);
     }
 
+    public static void processQueries() {
+        for(int i = 0; i < (parsedQueries.size() * (getWarmPercentage() /100f)); i++) {
+
+            queriesResults.add(QueryHandler.resultForAQuery(parsedQueries.get(i)));
+        }
+    }
+
+    public static void storeQueriesWithTheirResultsInFile() throws FileNotFoundException {
+        File output = new File(getOutputPath() + "/results.csv");
+        try(PrintWriter printWriter = new PrintWriter(output)){
+
+            printWriter.println("Queries,Results");
+            for(int i = 0; i< rawQueries.size(); i++) {
+
+                String fileLine = rawQueries.get(i).toString() + ",{";
+                for(Integer queryResult : queriesResults.get(i)) {
+                    Dictionary dictionary = Dictionary.getInstance();
+                    fileLine += dictionary.getDictionaryMap().get(queryResult) + ",";
+                }
+                if(fileLine.endsWith(","))
+                    fileLine = StringUtils.chop(fileLine);
+                fileLine+="}";
+                printWriter.println(fileLine);
+            }
+        }
+    }
     public static void parseData() throws IOException {
 
         try (Reader dataReader = new FileReader(getDataFile())) {
+
             // On va parser des données au format ntriples
             RDFParser rdfParser = Rio.createParser(RDFFormat.NTRIPLES);
 
@@ -116,9 +135,6 @@ public final class Parser {// ==================================================
         }
     }
 
-    /**
-     * Fichier contenant des données rdf
-     */
     public static String getDataFile() {
         return dataFile;
     }
@@ -129,9 +145,6 @@ public final class Parser {// ==================================================
         //TODO else throw exception
     }
 
-    /**
-     * Fichier contenant les requêtes sparql
-     */
     public static String getQueryFile() {
         return queryFile;
     }
@@ -153,5 +166,27 @@ public final class Parser {// ==================================================
     public static void setOutputPath(String outputPath) {
         if(checkIfStringPathExists(queryFile))
             Parser.outputPath = outputPath;
+    }
+
+    public static int getWarmPercentage() {
+        return warmPercentage;
+    }
+
+    public static void setWarmPercentage(int warmPercentage) {
+        //TODO remplacer éventuellement par des exceptions
+        if(warmPercentage > 100)
+            Parser.warmPercentage = 100;
+        else if(warmPercentage < 0)
+            Parser.warmPercentage = 0;
+        else
+            Parser.warmPercentage = warmPercentage;
+    }
+
+    public static boolean isShuffle() {
+        return shuffle;
+    }
+
+    public static void setShuffle(boolean shuffle) {
+        Parser.shuffle = shuffle;
     }
 }

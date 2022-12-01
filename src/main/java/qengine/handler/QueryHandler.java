@@ -9,6 +9,7 @@ import qengine.utils.HashSetUtils;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /*
  * This class handles the queries
@@ -23,13 +24,15 @@ public final class QueryHandler {
 
     private QueryHandler() {}
 
-    public static void resultForAQuery(ParsedQuery query) {
+    public static HashSet<Integer> resultForAQuery(ParsedQuery query) {
 
         HashSet<Integer> resultForAnEntireQuery = new HashSet<>();
         List<StatementPattern> patterns = StatementPatternCollector.process(query.getTupleExpr());
 
         resultForAnEntireQuery = getResultFromPatterns(resultForAnEntireQuery, patterns);
         displayResult(resultForAnEntireQuery);
+
+        return resultForAnEntireQuery;
     }
 
     private static void displayResult(HashSet<Integer> resultForAnEntireQuery) {
