@@ -9,7 +9,6 @@ import qengine.utils.HashSetUtils;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /*
  * This class handles the queries
@@ -19,12 +18,15 @@ import java.util.Set;
  * */
 public final class QueryHandler {
 
-    private static final Dictionary dictionary = Dictionary.getInstance();
-    private static final IndexCollection hexastore = IndexCollection.getInstance();
+    private final Dictionary dictionary;
+    private final IndexCollection hexastore;
 
-    private QueryHandler() {}
+    public QueryHandler(Dictionary dictionary, IndexCollection hexastore) {
+        this.dictionary = dictionary;
+        this.hexastore = hexastore;
+    }
 
-    public static HashSet<Integer> resultForAQuery(ParsedQuery query) {
+    public HashSet<Integer> resultForAQuery(ParsedQuery query) {
 
         HashSet<Integer> resultForAnEntireQuery = new HashSet<>();
         List<StatementPattern> patterns = StatementPatternCollector.process(query.getTupleExpr());
@@ -35,7 +37,7 @@ public final class QueryHandler {
         return resultForAnEntireQuery;
     }
 
-    private static void displayResult(HashSet<Integer> resultForAnEntireQuery) {
+    private void displayResult(HashSet<Integer> resultForAnEntireQuery) {
         System.out.println("Résultat : [ ");
         for (Integer result : resultForAnEntireQuery) {
             System.out.println("    " + result + " : " + dictionary.getDictionaryMap().get(result));
@@ -43,14 +45,14 @@ public final class QueryHandler {
         System.out.println(" ] ");
     }
 
-    private static HashSet<Integer> getResultFromPatterns(HashSet<Integer> resultForAnEntireQuery, List<StatementPattern> patterns) {
+    private HashSet<Integer> getResultFromPatterns(HashSet<Integer> resultForAnEntireQuery, List<StatementPattern> patterns) {
         boolean firstPattern = true;
 
         System.out.println("Query : [");
         for (StatementPattern pattern : patterns) {
 
             System.out.println("    Pattern : ");
-            HashSet<Integer> resultForOnePattern = QueryHandler.resultForAPattern(pattern);
+            HashSet<Integer> resultForOnePattern = resultForAPattern(pattern);
 
             if (firstPattern) {
                 firstPattern = false;
@@ -64,7 +66,7 @@ public final class QueryHandler {
         return resultForAnEntireQuery;
     }
 
-    public static HashSet<Integer> resultForAPattern(StatementPattern pattern) {
+    public HashSet<Integer> resultForAPattern(StatementPattern pattern) {
 
         HashSet<Integer> listOfLeafFromOPS = new HashSet<>();
         int object = dictionary.getKeyByValue(pattern.getObjectVar().getValue().toString());

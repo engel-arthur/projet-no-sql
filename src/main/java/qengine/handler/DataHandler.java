@@ -10,11 +10,17 @@ import qengine.index.IndexCollection;
  * */
 public final class DataHandler extends AbstractRDFHandler {
 
+	private final Dictionary dictionary;
+	private final IndexCollection hexastore;
+
+	public DataHandler(Dictionary dictionary, IndexCollection hexastore) {
+		super();
+		this.dictionary = dictionary;
+		this.hexastore = hexastore;
+	}
+
 	@Override
 	public void handleStatement(Statement st) {
-
-		Dictionary dictionary = Dictionary.getInstance();
-		IndexCollection hexastore = IndexCollection.getInstance();
 
 		int subjectIndex = dictionary.addToDictionary(String.valueOf(st.getSubject()));
 		int predicateIndex = dictionary.addToDictionary(String.valueOf(st.getPredicate()));

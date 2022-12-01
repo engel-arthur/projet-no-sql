@@ -2,10 +2,7 @@ package qengine.parser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
@@ -15,13 +12,16 @@ import org.eclipse.rdf4j.rio.Rio;
 import qengine.dictionary.Dictionary;
 import qengine.handler.DataHandler;
 import qengine.handler.QueryHandler;
+import qengine.index.IndexCollection;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.stream.Stream;
 
 /*
@@ -39,19 +39,36 @@ public final class Parser {// ==================================================
 
     private static String outputPath = workingDir + "out";
 
+    private static final Dictionary dictionary = Dictionary.getInstance();
+    private static final IndexCollection hexastore = IndexCollection.getInstance();
     private static final ArrayList<String> rawQueries = new ArrayList<>();
     private static final ArrayList<ParsedQuery> parsedQueries = new ArrayList<>();
     private static final ArrayList<HashSet<Integer>> queriesResults = new ArrayList<>();
 
-
     private static int warmPercentage = 100;
-
     private static boolean shuffle = false;
-    private static Dictionary dictionary = Dictionary.getInstance();
+    private static boolean jenaEnabled = false;
 
     // ========================================================================
 
-    public static void parseQueries() throws IOException {
+    public static void fullProcess() throws IOException {
+        parseData();
+        parseQueries();
+
+        if(isShuffle())
+            shuffleQueries();
+
+        processQueries(true);
+
+        processQueries(false);
+
+
+        storeQueriesWithTheirResultsInFile();
+
+        if(isJenaEnabled())
+            jenaParse();
+    }
+    private static void parseQueries() throws IOException {
 
         try (Stream<String> lineStream = Files.lines(Paths.get(getQueryFile()))) {
 
@@ -68,16 +85,6 @@ public final class Parser {// ==================================================
                 }
             }
         }
-
-        if(isShuffle()) {
-            shuffleQueries();
-        }
-
-        processQueries();
-
-        storeQueriesWithTheirResultsInFile();
-
-        jenaParse();
     }
 
     private static void parseQueryLine(String line, StringBuilder queryStringBuilder) {
@@ -96,36 +103,43 @@ public final class Parser {// ==================================================
         }
     }
 
-    public static void shuffleQueries() {
+    private static void shuffleQueries() {
         Collections.shuffle(parsedQueries);
     }
 
-    public static void processQueries() {
-        for(int i = 0; i < (parsedQueries.size() * (getWarmPercentage() /100f)); i++) {
+    private static void processQueries(boolean warmEnabled) {
+        QueryHandler queryHandler = new QueryHandler(dictionary, hexastore);
 
-            queriesResults.add(QueryHandler.resultForAQuery(parsedQueries.get(i)));
+        int numberOfQueriesToProcess = parsedQueries.size();
+
+        if(warmEnabled)
+            numberOfQueriesToProcess *= getWarmPercentage() /100f;
+
+        for(int i = 0; i < numberOfQueriesToProcess; i++) {
+
+            queriesResults.add(queryHandler.resultForAQuery(parsedQueries.get(i)));
         }
     }
 
-    public static void storeQueriesWithTheirResultsInFile() throws FileNotFoundException {
+    private static void storeQueriesWithTheirResultsInFile() throws FileNotFoundException {
         File output = new File(getOutputPath() + "/results.csv");
         try(PrintWriter printWriter = new PrintWriter(output)){
 
             printWriter.println("Queries,Results");
             for(int i = 0; i< rawQueries.size(); i++) {
 
-                String fileLine = rawQueries.get(i).toString() + ",{";
+                StringBuilder fileLine = new StringBuilder(rawQueries.get(i) + ",{");
                 for(Integer queryResult : queriesResults.get(i)) {
-                    fileLine += dictionary.getDictionaryMap().get(queryResult) + ",";
+                    fileLine.append(dictionary.getDictionaryMap().get(queryResult)).append(",");
                 }
-                if(fileLine.endsWith(","))
-                    fileLine = StringUtils.chop(fileLine);
-                fileLine+="}";
+                if(fileLine.toString().endsWith(","))
+                    fileLine = new StringBuilder(StringUtils.chop(fileLine.toString()));
+                fileLine.append("}");
                 printWriter.println(fileLine);
             }
         }
     }
-    public static void parseData() throws IOException {
+    private static void parseData() throws IOException {
 
         try (Reader dataReader = new FileReader(getDataFile())) {
 
@@ -133,7 +147,7 @@ public final class Parser {// ==================================================
             RDFParser rdfParser = Rio.createParser(RDFFormat.NTRIPLES);
 
             // On utilise notre implémentation de handler
-            rdfParser.setRDFHandler(new DataHandler());
+            rdfParser.setRDFHandler(new DataHandler(dictionary, hexastore));
 
             // Parsing et traitement de chaque triple par le handler
             rdfParser.parse(dataReader, baseURI);
@@ -146,7 +160,7 @@ public final class Parser {// ==================================================
         return Files.exists(path);
     }
 
-    public static void jenaParse() {
+    private static void jenaParse() {
         Model model = RDFDataMgr.loadModel(getDataFile());
 
         for(String queryString : rawQueries) {
@@ -207,5 +221,13 @@ public final class Parser {// ==================================================
 
     public static void setShuffle(boolean shuffle) {
         Parser.shuffle = shuffle;
+    }
+
+    public static boolean isJenaEnabled() {
+        return jenaEnabled;
+    }
+
+    public static void setJenaEnabled(boolean jenaEnabled) {
+        Parser.jenaEnabled = jenaEnabled;
     }
 }

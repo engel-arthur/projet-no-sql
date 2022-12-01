@@ -66,17 +66,15 @@ public final class ConsoleArgumentsHandler {
         if(cmd.hasOption(OUTPUT)) {
             String outputPath = cmd.getOptionValue(OUTPUT);
             Parser.setOutputPath(outputPath);
-            //TODO stockage csv
         }
         if(cmd.hasOption(JENA)) {
-            //lancer fonction jena
+            Parser.setJenaEnabled(true);
         }
         if(cmd.hasOption(WARM)) {
             int warmPercentage = Integer.parseInt(cmd.getOptionValue(WARM));
             Parser.setWarmPercentage(warmPercentage);
         }
         if(cmd.hasOption(SHUFFLE)) {
-            //lancer fonction shuffle (Collection.shuffle)
             Parser.setShuffle(true);
         }
     }
