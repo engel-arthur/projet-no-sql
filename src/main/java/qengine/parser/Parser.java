@@ -1,6 +1,12 @@
 package qengine.parser;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -25,9 +31,6 @@ public final class Parser {// ==================================================
 
     private static final String baseURI = null;
 
-    /**
-     * Votre répertoire de travail où vont se trouver les fichiers à lire
-     */
     private static final String workingDir = "data/";
 
     private static String queryFile = workingDir + "sample_query.queryset";
@@ -44,8 +47,10 @@ public final class Parser {// ==================================================
     private static int warmPercentage = 100;
 
     private static boolean shuffle = false;
+    private static Dictionary dictionary = Dictionary.getInstance();
 
     // ========================================================================
+
     public static void parseQueries() throws IOException {
 
         try (Stream<String> lineStream = Files.lines(Paths.get(getQueryFile()))) {
@@ -71,6 +76,8 @@ public final class Parser {// ==================================================
         processQueries();
 
         storeQueriesWithTheirResultsInFile();
+
+        jenaParse();
     }
 
     private static void parseQueryLine(String line, StringBuilder queryStringBuilder) {
@@ -109,7 +116,6 @@ public final class Parser {// ==================================================
 
                 String fileLine = rawQueries.get(i).toString() + ",{";
                 for(Integer queryResult : queriesResults.get(i)) {
-                    Dictionary dictionary = Dictionary.getInstance();
                     fileLine += dictionary.getDictionaryMap().get(queryResult) + ",";
                 }
                 if(fileLine.endsWith(","))
@@ -135,6 +141,24 @@ public final class Parser {// ==================================================
         }
     }
 
+    private static boolean checkIfStringPathExists(String stringPath) {
+        Path path = Paths.get(stringPath);
+        return Files.exists(path);
+    }
+
+    public static void jenaParse() {
+        Model model = RDFDataMgr.loadModel(getDataFile());
+
+        for(String queryString : rawQueries) {
+
+            try (QueryExecution queryExecution = QueryExecutionFactory.create(queryString, model)) {
+                Query query = QueryFactory.create(queryString) ;
+                ResultSet results = queryExecution.execSelect();
+                ResultSetFormatter.out(System.out, results, query) ;
+            }
+        }
+    }
+
     public static String getDataFile() {
         return dataFile;
     }
@@ -152,11 +176,6 @@ public final class Parser {// ==================================================
     public static void setQueryFile(String queryFile) {
         if(checkIfStringPathExists(queryFile))
             Parser.queryFile = queryFile;
-    }
-
-    private static boolean checkIfStringPathExists(String stringPath) {
-        Path path = Paths.get(stringPath);
-        return Files.exists(path);
     }
 
     public static String getOutputPath() {

@@ -15,8 +15,8 @@ public final class Main {
 		Parser.parseData();
 		Parser.parseQueries();
 
-		Parser.setWarmPercentage(100);
-		Parser.processQueries();
+		/*Parser.setWarmPercentage(100);
+		Parser.processQueries();*/
 	}
 
 }
