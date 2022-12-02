@@ -2,10 +2,8 @@ package qengine.parser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
@@ -18,7 +16,6 @@ import qengine.handler.QueryHandler;
 import qengine.index.IndexCollection;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,7 +59,6 @@ public final class Parser {// ==================================================
         processQueries(true);
 
         processQueries(false);
-
 
         storeQueriesWithTheirResultsInFile();
 
@@ -112,6 +108,7 @@ public final class Parser {// ==================================================
 
     private static void processQueries(boolean warmEnabled) {
         QueryHandler queryHandler = new QueryHandler(dictionary, hexastore);
+        queriesResults.clear();
 
         int numberOfQueriesToProcess = parsedQueries.size();
 
@@ -174,33 +171,50 @@ public final class Parser {// ==================================================
             String queryString = rawQueries.get(i);
             try (QueryExecution queryExecution = QueryExecutionFactory.create(queryString, model)) {
 
-                Query query = QueryFactory.create(queryString) ;
-                ResultSet results = queryExecution.execSelect();
-                ArrayList<String> jenaResults = new ArrayList<>();
-                while(results.hasNext()) {
+                ResultSet jenaResults = getQueryResultFromJena(queryExecution);
 
-                    QuerySolution result = results.next();
-                    for (Iterator<String> resultIterator = result.varNames(); resultIterator.hasNext(); ) {
+                ArrayList<String> jenaResultsStringArray = storeJenaResultsToStringArray(jenaResults);
 
-                        String node = resultIterator.next();
-                        RDFNode resultNode = result.get(node);
-                        if(resultNode!=null)
-                            jenaResults.add(resultNode.toString());
-                    }
-                }
+                ArrayList<String> homeResultsStringArray = indexSetToStringArray(queriesResults.get(i));
 
-                ArrayList<String> homeResults = indexSetToStringArray(queriesResults.get(i));
-                boolean differentResults = compareWithJenaResults(jenaResults, homeResults);
+                boolean differentResults = compareJenaResultsWithHomeResults(jenaResultsStringArray, homeResultsStringArray);
+
                 if(differentResults) {
-                    System.out.println("Résultats différents!");
-                    System.out.println("Requête : " + queryString);
-                    System.out.println("Résultats \"maison\" : " + homeResults.toString());
-                    System.out.println("Résultats Jena : " + jenaResults.toString() + "\n");
+                    printDifferenceBetweenResults(queryString, jenaResultsStringArray, homeResultsStringArray);
                 }
-                //System.out.println(jenaResultsArray);
-                //ResultSetFormatter.out(System.out, results, query) ;
             }
         }
+    }
+
+    private static ResultSet getQueryResultFromJena(QueryExecution queryExecution) {
+
+        //Extrait dans une méthode car le nom "execSelect" est peu explicite
+        return queryExecution.execSelect();
+    }
+
+    private static ArrayList<String> storeJenaResultsToStringArray(ResultSet results) {
+        ArrayList<String> jenaResults = new ArrayList<>();
+
+        while(results.hasNext()) {
+
+            QuerySolution result = results.next();
+            for (Iterator<String> resultIterator = result.varNames(); resultIterator.hasNext(); ) {
+
+                String node = resultIterator.next();
+                RDFNode resultNode = result.get(node);
+                if(resultNode!=null)
+                    jenaResults.add(resultNode.toString());
+            }
+        }
+
+        return jenaResults;
+    }
+
+    private static void printDifferenceBetweenResults(String queryString, ArrayList<String> jenaResults, ArrayList<String> homeResults) {
+        System.out.println("Résultats différents!");
+        System.out.println("Requête : " + queryString);
+        System.out.println("Résultats \"maison\" : " + homeResults.toString());
+        System.out.println("Résultats Jena : " + jenaResults.toString() + "\n");
     }
 
     private static ArrayList<String> indexSetToStringArray(HashSet<Integer> set) {
@@ -211,7 +225,7 @@ public final class Parser {// ==================================================
         }
         return result;
     }
-    private static boolean compareWithJenaResults(ArrayList<String> jenaResults, ArrayList<String> homeResults) {
+    private static boolean compareJenaResultsWithHomeResults(ArrayList<String> jenaResults, ArrayList<String> homeResults) {
         boolean different = false;
         if(jenaResults.size() != homeResults.size()) {
 
