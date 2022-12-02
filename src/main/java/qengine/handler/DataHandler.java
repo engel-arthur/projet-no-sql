@@ -13,10 +13,13 @@ public final class DataHandler extends AbstractRDFHandler {
 	private final Dictionary dictionary;
 	private final IndexCollection hexastore;
 
+	private int tripletCounter;
+
 	public DataHandler(Dictionary dictionary, IndexCollection hexastore) {
 		super();
 		this.dictionary = dictionary;
 		this.hexastore = hexastore;
+		tripletCounter = 0;
 	}
 
 	@Override
@@ -27,5 +30,10 @@ public final class DataHandler extends AbstractRDFHandler {
 		int objectIndex = dictionary.addToDictionary(String.valueOf(st.getObject()));
 
 		hexastore.hexastore(subjectIndex, predicateIndex, objectIndex);
+		tripletCounter = getTripletCounter() + 1;
+	}
+
+	public int getTripletCounter() {
+		return tripletCounter;
 	}
 }

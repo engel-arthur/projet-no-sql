@@ -1,0 +1,9 @@
+
+ˆ
+java:S1319"mThe return type of this method should be an interface such as "Set" rather than the implementation "HashSet".(Ë“Å”ýÿÿÿÿ
+}
+java:S1319"bThe type of "list1" should be an interface such as "Set" rather than the implementation "HashSet".(Ë“Å”ýÿÿÿÿ
+}
+java:S1319"bThe type of "list2" should be an interface such as "Set" rather than the implementation "HashSet".(Ë“Å”ýÿÿÿÿ
+U
+java:S1118":Add a private constructor to hide the implicit public one.(ýŽÑÕøÿÿÿÿ

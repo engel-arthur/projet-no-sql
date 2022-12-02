@@ -1,0 +1,6 @@
+
+
+java:S1319E"mThe return type of this method should be an interface such as "Set" rather than the implementation "HashSet".(ø€ô¦üÿÿÿÿ8Íà÷ğÌ0
+U	java:S106L"9Replace this use of System.out or System.err by a logger.(â÷èÛ8•‹ÚüÊ0
+]	java:S125J"<This block of commented-out lines of code should be removed.(ƒšâ”şÿÿÿÿ8•‹ÚüÊ0
+U	java:S106P"9Replace this use of System.out or System.err by a logger.(ÊğÊï8•‹ÚüÊ0

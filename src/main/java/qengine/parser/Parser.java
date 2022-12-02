@@ -14,6 +14,7 @@ import qengine.dictionary.Dictionary;
 import qengine.handler.DataHandler;
 import qengine.handler.QueryHandler;
 import qengine.index.IndexCollection;
+import qengine.program.ProgramEvaluation;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -25,11 +26,12 @@ import java.util.stream.Stream;
 /*
  * This class handles the parsing of the files containing the data and the queries
  * */
-public final class Parser {// ========================================================================
+public final class Parser {
 
     private static final String baseURI = null;
 
     private static final String workingDir = "data/";
+    public static final float NS_TO_MS_RATIO = 1000000;
 
     private static String queryFile = workingDir + "sample_query.queryset";
 
@@ -47,20 +49,44 @@ public final class Parser {// ==================================================
     private static boolean shuffle = false;
     private static boolean jenaEnabled = false;
 
+    private static boolean exportEnabled = false;
+
     // ========================================================================
 
     public static void fullProcess() throws IOException {
+
+        ProgramEvaluation.addToOutputData("DATA_FILE_NAME", dataFile);
+        ProgramEvaluation.addToOutputData("QUERIES_FILE_NAME", queryFile);
+
+        long startTimeDataReading = System.nanoTime();
         parseData();
+        long endTimeDataReading = System.nanoTime();
+        float totalTimeDataReading = (endTimeDataReading - startTimeDataReading)/ NS_TO_MS_RATIO;
+        ProgramEvaluation.addToOutputData("DATA_READING_TIME", String.valueOf(totalTimeDataReading));
+        ProgramEvaluation.addToOutputData("DICO_CREATION_TIME", String.valueOf(totalTimeDataReading));
+        ProgramEvaluation.addToOutputData("INDEXES_CREATION_TIME", String.valueOf(totalTimeDataReading));
+
+        long startTimeQueriesReading = System.nanoTime();
         parseQueries();
+        long endTimeQueriesReading = System.nanoTime();
+        float totalTimeQueriesReading = (endTimeQueriesReading - startTimeQueriesReading)/ NS_TO_MS_RATIO;
+        ProgramEvaluation.addToOutputData("QUERIES_READING_TIME", String.valueOf(totalTimeQueriesReading));
+
+        ProgramEvaluation.addToOutputData("QUERIES_AMOUNT", String.valueOf(parsedQueries.size()));
 
         if(isShuffle())
             shuffleQueries();
 
         processQueries(true);
 
+        long startTimeProcessQueries = System.nanoTime();
         processQueries(false);
+        long endTimeProcessQueries = System.nanoTime();
+        float totalTimeProcessQueries = (endTimeProcessQueries - startTimeProcessQueries)/ NS_TO_MS_RATIO;
+        ProgramEvaluation.addToOutputData("QUERIES_PROCESSING_TIME", String.valueOf(totalTimeProcessQueries));
 
-        storeQueriesWithTheirResultsInFile();
+        if (exportEnabled)
+            storeQueriesWithTheirResultsInFile();
 
         if(isJenaEnabled())
             jenaVerification();
@@ -145,14 +171,19 @@ public final class Parser {// ==================================================
 
         try (Reader dataReader = new FileReader(getDataFile())) {
 
+            DataHandler dataHandler = new DataHandler(dictionary, hexastore);
+
             // On va parser des données au format ntriples
             RDFParser rdfParser = Rio.createParser(RDFFormat.NTRIPLES);
 
             // On utilise notre implémentation de handler
-            rdfParser.setRDFHandler(new DataHandler(dictionary, hexastore));
+            rdfParser.setRDFHandler(dataHandler);
 
             // Parsing et traitement de chaque triple par le handler
             rdfParser.parse(dataReader, baseURI);
+
+            ProgramEvaluation.addToOutputData("TRIPLET_AMOUNT", String.valueOf(dataHandler.getTripletCounter()));
+            ProgramEvaluation.addToOutputData("INDEXES_AMOUNT", String.valueOf(dictionary.getDictionaryMap().size()));
 
         }
     }
@@ -299,5 +330,9 @@ public final class Parser {// ==================================================
 
     public static void setJenaEnabled(boolean jenaEnabled) {
         Parser.jenaEnabled = jenaEnabled;
+    }
+
+    public static void setExportEnabled(boolean exportEnabled) {
+        Parser.exportEnabled = exportEnabled;
     }
 }
