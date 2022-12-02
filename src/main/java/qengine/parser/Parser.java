@@ -2,7 +2,10 @@ package qengine.parser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
@@ -15,13 +18,11 @@ import qengine.handler.QueryHandler;
 import qengine.index.IndexCollection;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.stream.Stream;
 
 /*
@@ -45,7 +46,7 @@ public final class Parser {// ==================================================
     private static final ArrayList<ParsedQuery> parsedQueries = new ArrayList<>();
     private static final ArrayList<HashSet<Integer>> queriesResults = new ArrayList<>();
 
-    private static int warmPercentage = 100;
+    private static int warmPercentage = 0;
     private static boolean shuffle = false;
     private static boolean jenaEnabled = false;
 
@@ -66,7 +67,7 @@ public final class Parser {// ==================================================
         storeQueriesWithTheirResultsInFile();
 
         if(isJenaEnabled())
-            jenaParse();
+            jenaVerification();
     }
     private static void parseQueries() throws IOException {
 
@@ -104,7 +105,9 @@ public final class Parser {// ==================================================
     }
 
     private static void shuffleQueries() {
-        Collections.shuffle(parsedQueries);
+        long seed = System.nanoTime();
+        Collections.shuffle(parsedQueries, new Random(seed));
+        Collections.shuffle(rawQueries, new Random(seed));
     }
 
     private static void processQueries(boolean warmEnabled) {
@@ -123,16 +126,18 @@ public final class Parser {// ==================================================
 
     private static void storeQueriesWithTheirResultsInFile() throws FileNotFoundException {
         File output = new File(getOutputPath() + "/results.csv");
+        String csvSeparator = ",";
+        String resultSeparator = "|";
         try(PrintWriter printWriter = new PrintWriter(output)){
 
             printWriter.println("Queries,Results");
             for(int i = 0; i< rawQueries.size(); i++) {
 
-                StringBuilder fileLine = new StringBuilder(rawQueries.get(i) + ",{");
+                StringBuilder fileLine = new StringBuilder(rawQueries.get(i) + csvSeparator + "{");
                 for(Integer queryResult : queriesResults.get(i)) {
-                    fileLine.append(dictionary.getDictionaryMap().get(queryResult)).append(",");
+                    fileLine.append(dictionary.getDictionaryMap().get(queryResult)).append(resultSeparator);
                 }
-                if(fileLine.toString().endsWith(","))
+                if(fileLine.toString().endsWith(resultSeparator))
                     fileLine = new StringBuilder(StringUtils.chop(fileLine.toString()));
                 fileLine.append("}");
                 printWriter.println(fileLine);
@@ -160,17 +165,68 @@ public final class Parser {// ==================================================
         return Files.exists(path);
     }
 
-    private static void jenaParse() {
+    private static void jenaVerification() {
         Model model = RDFDataMgr.loadModel(getDataFile());
+        int nbErrors = 0;
 
-        for(String queryString : rawQueries) {
+        for(int i=0; i < rawQueries.size(); i++) {
 
+            String queryString = rawQueries.get(i);
             try (QueryExecution queryExecution = QueryExecutionFactory.create(queryString, model)) {
+
                 Query query = QueryFactory.create(queryString) ;
                 ResultSet results = queryExecution.execSelect();
-                ResultSetFormatter.out(System.out, results, query) ;
+                ArrayList<String> jenaResults = new ArrayList<>();
+                while(results.hasNext()) {
+
+                    QuerySolution result = results.next();
+                    for (Iterator<String> resultIterator = result.varNames(); resultIterator.hasNext(); ) {
+
+                        String node = resultIterator.next();
+                        RDFNode resultNode = result.get(node);
+                        if(resultNode!=null)
+                            jenaResults.add(resultNode.toString());
+                    }
+                }
+
+                ArrayList<String> homeResults = indexSetToStringArray(queriesResults.get(i));
+                boolean differentResults = compareWithJenaResults(jenaResults, homeResults);
+                if(differentResults) {
+                    System.out.println("Résultats différents!");
+                    System.out.println("Requête : " + queryString);
+                    System.out.println("Résultats \"maison\" : " + homeResults.toString());
+                    System.out.println("Résultats Jena : " + jenaResults.toString() + "\n");
+                }
+                //System.out.println(jenaResultsArray);
+                //ResultSetFormatter.out(System.out, results, query) ;
             }
         }
+    }
+
+    private static ArrayList<String> indexSetToStringArray(HashSet<Integer> set) {
+        ArrayList<String> result = new ArrayList<>();
+        for(int index : set) {
+
+            result.add(dictionary.getDictionaryMap().get(index));
+        }
+        return result;
+    }
+    private static boolean compareWithJenaResults(ArrayList<String> jenaResults, ArrayList<String> homeResults) {
+        boolean different = false;
+        if(jenaResults.size() != homeResults.size()) {
+
+            different = true;
+        }
+        else {
+
+            for(String result : jenaResults) {
+
+                if(!homeResults.contains(result))
+                    different = true;
+            }
+        }
+
+        return different;
     }
 
     public static String getDataFile() {
