@@ -14,7 +14,7 @@ import static qengine.parser.Parser.getOutputPath;
 public final class ProgramEvaluation {
 
     private static HashMap<String, String> outputData = new HashMap<>();
-    private static ArrayList<String> keysForData = new ArrayList<>(Arrays.asList("DATA_FILE_NAME", "QUERIES_FILE_NAME", "TRIPLET_AMOUNT", "QUERIES_AMOUNT",
+    private static ArrayList<String> keysForData = new ArrayList<>(Arrays.asList("DATA_FILE_NAME", "QUERIES_FOLDER", "TRIPLET_AMOUNT", "QUERIES_AMOUNT",
             "DATA_READING_TIME", "QUERIES_READING_TIME", "DICO_CREATION_TIME", "INDEXES_AMOUNT", "INDEXES_CREATION_TIME", "QUERIES_PROCESSING_TIME", "TOTAL_TIME"));
 
     public static void init(){

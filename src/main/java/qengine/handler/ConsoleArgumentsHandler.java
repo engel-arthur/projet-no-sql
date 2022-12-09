@@ -61,7 +61,7 @@ public final class ConsoleArgumentsHandler {
     private static void handleOptions(CommandLine cmd) {
         if(cmd.hasOption(QUERIES)) {
             String queriesFilepath = cmd.getOptionValue(QUERIES);
-            Parser.setQueryFile(queriesFilepath);
+            Parser.setQueriesDirectory(queriesFilepath);
         }
         if(cmd.hasOption(DATA)) {
             String dataFilepath = cmd.getOptionValue(DATA);

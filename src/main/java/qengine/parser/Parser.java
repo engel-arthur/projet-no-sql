@@ -1,5 +1,6 @@
 package qengine.parser;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
@@ -18,7 +19,6 @@ import qengine.program.ProgramEvaluation;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
@@ -33,7 +33,7 @@ public final class Parser {
     private static final String workingDir = "data/";
     public static final float NS_TO_MS_RATIO = 1000000;
 
-    private static String queryFile = workingDir + "sample_query.queryset";
+    private static String queriesDirectory = workingDir + "sample_query.queryset";
 
     private static String dataFile = workingDir + "100K.nt";
 
@@ -56,7 +56,7 @@ public final class Parser {
     public static void fullProcess() throws IOException {
 
         ProgramEvaluation.addToOutputData("DATA_FILE_NAME", dataFile);
-        ProgramEvaluation.addToOutputData("QUERIES_FILE_NAME", queryFile);
+        ProgramEvaluation.addToOutputData("QUERIES_FOLDER", queriesDirectory);
 
         long startTimeDataReading = System.nanoTime();
         parseData();
@@ -67,7 +67,7 @@ public final class Parser {
         ProgramEvaluation.addToOutputData("INDEXES_CREATION_TIME", String.valueOf(totalTimeDataReading));
 
         long startTimeQueriesReading = System.nanoTime();
-        parseQueries();
+        parseQueriesDirectory();
         long endTimeQueriesReading = System.nanoTime();
         float totalTimeQueriesReading = (endTimeQueriesReading - startTimeQueriesReading)/ NS_TO_MS_RATIO;
         ProgramEvaluation.addToOutputData("QUERIES_READING_TIME", String.valueOf(totalTimeQueriesReading));
@@ -91,9 +91,20 @@ public final class Parser {
         if(isJenaEnabled())
             jenaVerification();
     }
-    private static void parseQueries() throws IOException {
+    private static void parseQueriesDirectory() throws IOException {
+        File queriesDirectory = new File(getQueriesDirectory());
+        File[] queryFiles = queriesDirectory.listFiles();
+        assert queryFiles != null;
 
-        try (Stream<String> lineStream = Files.lines(Paths.get(getQueryFile()))) {
+        for(File queryFile : queryFiles) {
+            if(queryFile.isFile() && FilenameUtils.getExtension(queryFile.getName()).equals("queryset")) {
+                parseQueriesFromAFile(getQueriesDirectory() + "/"  + queryFile.getName());
+            }
+        }
+    }
+    private static void parseQueriesFromAFile(String filepath) throws IOException {
+
+        try (Stream<String> lineStream = Files.lines(Paths.get(filepath))) {
 
             Iterator<String> lineIterator = lineStream.iterator();
             StringBuilder queryStringBuilder = new StringBuilder();
@@ -153,16 +164,16 @@ public final class Parser {
         String resultSeparator = "|";
         try(PrintWriter printWriter = new PrintWriter(output)){
 
-            printWriter.println("Queries,Results");
+            printWriter.println("Queries,ResultsAmount,Results");
             for(int i = 0; i< rawQueries.size(); i++) {
 
-                StringBuilder fileLine = new StringBuilder(rawQueries.get(i) + csvSeparator + "{");
+                StringBuilder fileLine = new StringBuilder(rawQueries.get(i) + csvSeparator + queriesResults.get(i).size() + csvSeparator + "[");
                 for(Integer queryResult : queriesResults.get(i)) {
                     fileLine.append(dictionary.getDictionaryMap().get(queryResult)).append(resultSeparator);
                 }
                 if(fileLine.toString().endsWith(resultSeparator))
                     fileLine = new StringBuilder(StringUtils.chop(fileLine.toString()));
-                fileLine.append("}");
+                fileLine.append("]");
                 printWriter.println(fileLine);
             }
         }
@@ -188,9 +199,9 @@ public final class Parser {
         }
     }
 
-    private static boolean checkIfStringPathExists(String stringPath) {
-        Path path = Paths.get(stringPath);
-        return Files.exists(path);
+    private static boolean checkIfPathIsValid(String path) {
+        File f = new File(path);
+        return f.exists();
     }
 
     private static void jenaVerification() {
@@ -279,18 +290,18 @@ public final class Parser {
     }
 
     public static void setDataFile(String dataFile) {
-        if(checkIfStringPathExists(dataFile))
+        if(checkIfPathIsValid(dataFile))
             Parser.dataFile = dataFile;
         //TODO else throw exception
     }
 
-    public static String getQueryFile() {
-        return queryFile;
+    public static String getQueriesDirectory() {
+        return queriesDirectory;
     }
 
-    public static void setQueryFile(String queryFile) {
-        if(checkIfStringPathExists(queryFile))
-            Parser.queryFile = queryFile;
+    public static void setQueriesDirectory(String queriesDirectory) {
+        if(checkIfPathIsValid(queriesDirectory))
+            Parser.queriesDirectory = queriesDirectory;
     }
 
     public static String getOutputPath() {
@@ -298,7 +309,7 @@ public final class Parser {
     }
 
     public static void setOutputPath(String outputPath) {
-        if(checkIfStringPathExists(queryFile))
+        if(checkIfPathIsValid(queriesDirectory))
             Parser.outputPath = outputPath;
     }
 

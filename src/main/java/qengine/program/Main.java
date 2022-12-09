@@ -19,7 +19,6 @@ public final class Main {
 
 
 		float totalTime = (endTime - startTime) / NS_TO_MS_RATIO;
-		System.out.println("Temps d'exécution du programmme : " + totalTime);
 
 		ProgramEvaluation.addToOutputData("TOTAL_TIME", String.valueOf(totalTime));
 

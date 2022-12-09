@@ -32,7 +32,6 @@ public final class QueryHandler {
         List<StatementPattern> patterns = StatementPatternCollector.process(query.getTupleExpr());
 
         resultForAnEntireQuery = getResultFromPatterns(resultForAnEntireQuery, patterns);
-        displayResult(resultForAnEntireQuery);
 
         return resultForAnEntireQuery;
     }
@@ -47,23 +46,21 @@ public final class QueryHandler {
 
     private HashSet<Integer> getResultFromPatterns(HashSet<Integer> resultForAnEntireQuery, List<StatementPattern> patterns) {
         boolean firstPattern = true;
+        HashSet<Integer> resultForAnEntireQueryCopy = new HashSet<>(resultForAnEntireQuery);
 
-        System.out.println("Query : [");
         for (StatementPattern pattern : patterns) {
 
-            System.out.println("    Pattern : ");
             HashSet<Integer> resultForOnePattern = resultForAPattern(pattern);
 
             if (firstPattern) {
                 firstPattern = false;
-                resultForAnEntireQuery = resultForOnePattern;
+                resultForAnEntireQueryCopy = resultForOnePattern;
             }
             else {
-                resultForAnEntireQuery = HashSetUtils.listIntersection(resultForAnEntireQuery, resultForOnePattern);
+                resultForAnEntireQueryCopy = HashSetUtils.listIntersection(resultForAnEntireQueryCopy, resultForOnePattern);
             }
         }
-        System.out.println(" ]");
-        return resultForAnEntireQuery;
+        return resultForAnEntireQueryCopy;
     }
 
     public HashSet<Integer> resultForAPattern(StatementPattern pattern) {
@@ -73,11 +70,10 @@ public final class QueryHandler {
         int predicate = dictionary.getKeyByValue(pattern.getPredicateVar().getValue().toString());
 //        String subject = pattern.getSubjectVar().toString();
 
-        System.out.println("        Object : " + object + " Predicate : " + predicate);
 
         if (object == -1 || predicate == -1) {
 
-            System.out.println("Une des deux données de la requête n'existe pas dans le dictionnaire");
+            System.err.println("Une des deux données de la requête n'existe pas dans le dictionnaire Object : " + pattern.getObjectVar().getValue().toString() + " Predicate : " + pattern.getPredicateVar().getValue().toString());
         }
         else {
 
