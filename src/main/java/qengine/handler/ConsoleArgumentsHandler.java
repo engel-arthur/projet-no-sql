@@ -72,7 +72,7 @@ public final class ConsoleArgumentsHandler {
             Parser.setOutputPath(outputPath);
         }
         if(cmd.hasOption(JENA)) {
-            Parser.setJenaEnabled(true);
+            Parser.setJenaVerificationEnabled(true);
         }
         if(cmd.hasOption(WARM)) {
             int warmPercentage = Integer.parseInt(cmd.getOptionValue(WARM));

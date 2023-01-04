@@ -47,7 +47,7 @@ public final class Parser {
 
     private static int warmPercentage = 0;
     private static boolean shuffle = false;
-    private static boolean jenaEnabled = false;
+    private static boolean jenaVerificationEnabled = false;
 
     private static boolean exportEnabled = false;
 
@@ -88,8 +88,11 @@ public final class Parser {
         if (exportEnabled)
             storeQueriesWithTheirResultsInFile();
 
-        if(isJenaEnabled())
-            jenaVerification();
+        long startTimeJenaVerification = System.nanoTime();
+        jenaParse();
+        long endTimeJenaVerification = System.nanoTime();
+        float totalTimeJenaVerification = (endTimeJenaVerification - startTimeJenaVerification)/ NS_TO_MS_RATIO;
+        ProgramEvaluation.addToOutputData("JENA_TIME", String.valueOf(totalTimeJenaVerification));
     }
     private static void parseQueriesDirectory() throws IOException {
         File queriesDirectory = new File(getQueriesDirectory());
@@ -204,7 +207,7 @@ public final class Parser {
         return f.exists();
     }
 
-    private static void jenaVerification() {
+    private static void jenaParse() {
         Model model = RDFDataMgr.loadModel(getDataFile());
         int nbErrors = 0;
 
@@ -215,15 +218,18 @@ public final class Parser {
 
                 ResultSet jenaResults = getQueryResultFromJena(queryExecution);
 
-                ArrayList<String> jenaResultsStringArray = storeJenaResultsToStringArray(jenaResults);
+                if(isJenaVerificationEnabled()) {
+                    ArrayList<String> jenaResultsStringArray = storeJenaResultsToStringArray(jenaResults);
 
-                ArrayList<String> homeResultsStringArray = indexSetToStringArray(queriesResults.get(i));
+                    ArrayList<String> homeResultsStringArray = indexSetToStringArray(queriesResults.get(i));
 
-                boolean differentResults = compareJenaResultsWithHomeResults(jenaResultsStringArray, homeResultsStringArray);
+                    boolean differentResults = compareJenaResultsWithHomeResults(jenaResultsStringArray, homeResultsStringArray);
 
-                if(differentResults) {
-                    printDifferenceBetweenResults(queryString, jenaResultsStringArray, homeResultsStringArray);
+                    if(differentResults) {
+                        printDifferenceBetweenResults(queryString, jenaResultsStringArray, homeResultsStringArray);
+                    }
                 }
+
             }
         }
     }
@@ -335,12 +341,12 @@ public final class Parser {
         Parser.shuffle = shuffle;
     }
 
-    public static boolean isJenaEnabled() {
-        return jenaEnabled;
+    public static boolean isJenaVerificationEnabled() {
+        return jenaVerificationEnabled;
     }
 
-    public static void setJenaEnabled(boolean jenaEnabled) {
-        Parser.jenaEnabled = jenaEnabled;
+    public static void setJenaVerificationEnabled(boolean jenaVerificationEnabled) {
+        Parser.jenaVerificationEnabled = jenaVerificationEnabled;
     }
 
     public static void setExportEnabled(boolean exportEnabled) {
